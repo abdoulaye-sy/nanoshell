@@ -9,9 +9,9 @@ int main(void) {
 	int pid = -1;
 
 	while (1) {
-		printf("?> ");
-		fgets(line, 1024 * 4, stdin);
-		printf("%s\n", line);
+		printf("?> ");    //Début du prompt
+		fgets(line, 1024 * 4, stdin);    //Equ. input 
+		printf("%s\n", line);    //Réécris input
 		pid = fork();
 		printf("pid: %d\n", pid);
 		if (pid == 0) {
