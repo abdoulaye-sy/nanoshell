@@ -6,8 +6,7 @@ FLAGS=-Wall -Wextra
 all:
 	gcc $(FLAGS) -o $(NAME) $(SRC)
 
-foo:
-	ls
+clean:
+	rm -f $(NAME)
 
-bar:
-	ls -l
+re: clean all
