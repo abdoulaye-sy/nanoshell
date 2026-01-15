@@ -4,14 +4,13 @@
 #include <string.h>
 #include <sys/wait.h>
 
-
 extern char **environ;
 
+// Cherche la commande dans le PATH
 char *find_path(char *cmd)
 {
     static char full_path[1024];
-    char *path_env;
-    char *path_copy;
+    char *path;
     char *dir;
 
     if (strchr(cmd, '/') != NULL) {
@@ -19,64 +18,79 @@ char *find_path(char *cmd)
             return cmd;
         return NULL;
     }
-    path_env = getenv("PATH");
-    if (!path_env)
+    path = getenv("PATH");
+    if (path == NULL)
         return NULL;
-    path_copy = strdup(path_env);
-    dir = strtok(path_copy, ":");
-    while (dir) {
-        snprintf(full_path, sizeof(full_path), "%s/%s", dir, cmd);
+    path = strdup(path);
+    dir = strtok(path, ":");
+    while (dir != NULL) {
+        strcpy(full_path, dir);
+        strcat(full_path, "/");
+        strcat(full_path, cmd);
         if (access(full_path, X_OK) == 0) {
-            free(path_copy);
+            free(path);
             return full_path;
         }
         dir = strtok(NULL, ":");
     }
-    free(path_copy);
+    free(path);
     return NULL;
 }
 
-char **split_args(char *line)
+// Découpe la ligne en mots
+char **split_line(char *line)
 {
-    static char *argv[64];
-    int i = 0;
-    char *token;
+    char **args;
+    char *word;
+    int i;
 
-    token = strtok(line, " \t\n");
-    while (token && i < 63) {
-        argv[i++] = token;
-        token = strtok(NULL, " \t\n");
+    args = malloc(sizeof(char *) * 64);
+    if (args == NULL)
+        return NULL;
+    i = 0;
+    word = strtok(line, " \t\n");
+    while (word != NULL && i < 63) {
+        args[i] = word;
+        i++;
+        word = strtok(NULL, " \t\n");
     }
-    argv[i] = NULL;
-    return argv;
+    args[i] = NULL;
+    return args;
 }
 
-int do_builtin(char **argv)
+// Builtins : cd, pwd, env, exit
+int do_builtin(char **args)
 {
     char cwd[1024];
     char *path;
     int i;
 
-    if (strcmp(argv[0], "exit") == 0)
+    if (strcmp(args[0], "exit") == 0)
         exit(0);
-    if (strcmp(argv[0], "pwd") == 0) {
-        if (getcwd(cwd, sizeof(cwd)))
+    if (strcmp(args[0], "pwd") == 0) {
+        if (getcwd(cwd, sizeof(cwd)) != NULL)
             printf("%s\n", cwd);
+        else
+            perror("pwd");
         return 1;
     }
-    if (strcmp(argv[0], "env") == 0) {
+    if (strcmp(args[0], "env") == 0) {
         i = 0;
-        while (environ[i])
-            printf("%s\n", environ[i++]);
+        while (environ[i] != NULL) {
+            printf("%s\n", environ[i]);
+            i++;
+        }
         return 1;
     }
-    if (strcmp(argv[0], "cd") == 0) {
-        if (argv[1] == NULL || strcmp(argv[1], "~") == 0)
+    if (strcmp(args[0], "cd") == 0) {
+        if (args[1] == NULL || strcmp(args[1], "~") == 0)
             path = getenv("HOME");
         else
-            path = argv[1];
-        if (path)
-            chdir(path);
+            path = args[1];
+        if (path != NULL) {
+            if (chdir(path) != 0)
+                perror("cd");
+        }
         return 1;
     }
     return 0;
@@ -84,7 +98,7 @@ int do_builtin(char **argv)
 
 int main(void) {
     char line[1024 * 4] = {0};
-    char **argv;
+    char **args;
     char *exec_path;
     int pid = -1;
 
@@ -96,29 +110,32 @@ int main(void) {
         if (line[0] == '\0')
             continue;
 
-        argv = split_args(line);
-        if (!argv[0])
+        args = split_line(line);
+        if (args == NULL || args[0] == NULL) {
+            free(args);
             continue;
+        }
 
-        if (do_builtin(argv))
+        if (do_builtin(args) == 1) {
+            free(args);
             continue;
+        }
 
-        exec_path = find_path(argv[0]);
-        if (!exec_path) {
-            printf("nanoshell: weird, %s is not here... :/\n", argv[0]);
+        exec_path = find_path(args[0]);
+        if (exec_path == NULL) {
+            printf("nanoshell: weird, %s is not here... :/\n", args[0]);
+            free(args);
             continue;
         }
 
         pid = fork();
         if (pid == 0) {
-            execve(exec_path, argv, environ);
+            execve(exec_path, args, environ);
+            perror("execve");
             exit(-1);
         }
         waitpid(pid, NULL, 0);
+        free(args);
     }
-
     return 0;
 }
-
-
-
