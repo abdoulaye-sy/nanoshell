@@ -54,7 +54,15 @@ int main(void)
         ** On libère la mémoire
         ** utilisée pour la ligne
         */
-        free(line);
+       /* Si l'utilisateur tape quelque chose */
+if (line[0] != '\0')
+{
+    execute_command(line);
+}
+
+/* Libération mémoire */
+free(line);
+
     }
 
     /* 

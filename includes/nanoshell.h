@@ -44,5 +44,9 @@ char *read_input(void);
 /* 
 ** Fin de la protection
 */
+
+/* Exécute une commande simple */
+void execute_command(char *cmd);
+
 #endif
 

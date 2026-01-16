@@ -1,4 +1,4 @@
-# Nom du programme final
+*# Nom du programme final
 NAME = nanoshell
 
 # Compilateur utilisé
@@ -8,9 +8,11 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Werror -Iincludes
 
 # Fichiers source
-SRCS = src/main.c \
+SRCS = SRCS = src/main.c \
        src/prompt.c \
-       src/input.c
+       src/input.c \
+       src/exec.c
+
 
 # Fichiers objets
 OBJS = $(SRCS:.c=.o)
