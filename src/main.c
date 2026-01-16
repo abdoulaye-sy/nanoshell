@@ -1,59 +1,58 @@
 /* 
 ** On inclut le header du projet
-** pour avoir accès aux prototypes
+** pour connaître les fonctions
 */
 #include "nanoshell.h"
 
 /* 
-** =============================
-**        FONCTION MAIN
-** =============================
+** Fonction principale du programme
 */
 int main(void)
 {
     /* 
-    ** Pointeur qui contiendra la ligne
-    ** tapée par l'utilisateur
+    ** Cette variable va contenir
+    ** ce que l'utilisateur tape
     */
     char *line;
 
     /* 
-    ** Boucle infinie du shell
-    ** Le shell tourne tant qu'on ne quitte pas
+    ** Boucle infinie :
+    ** le shell ne s'arrête jamais
+    ** sauf si on le quitte
     */
     while (1)
     {
         /* 
-        ** Affiche le prompt "nanoshell$ "
+        ** On affiche le prompt
         */
         print_prompt();
 
         /* 
-        ** Lit l'entrée utilisateur
-        ** Retourne NULL si Ctrl-D
+        ** On lit l'entrée utilisateur
         */
         line = read_input();
 
         /* 
-        ** Si line est NULL, l'utilisateur a appuyé sur Ctrl-D
+        ** Si line est NULL,
+        ** l'utilisateur a fait Ctrl-D
         */
         if (line == NULL)
         {
             /* 
-            ** On affiche un retour à la ligne
-            ** pour que la sortie soit propre
+            ** On saute une ligne
+            ** avant de quitter
             */
             write(1, "\n", 1);
 
             /* 
-            ** On sort de la boucle infinie
+            ** On sort de la boucle
             */
             break;
         }
 
         /* 
-        ** Libère la mémoire allouée
-        ** pour éviter les fuites mémoire
+        ** On libère la mémoire
+        ** utilisée pour la ligne
         */
         free(line);
     }
@@ -63,3 +62,4 @@ int main(void)
     */
     return (0);
 }
+
