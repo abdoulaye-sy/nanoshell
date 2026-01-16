@@ -1,10 +1,10 @@
-NAME=nanoshell
-SRC=thing.c
-#FLAGS=-Wall -Wextra - Werror
-FLAGS=-Wall -Wextra
+NAME = nanoshell
+SRC = thing.c
+CC = gcc
+FLAGS = -Wall -Wextra -Werror
 
 all:
-	gcc $(FLAGS) -o $(NAME) $(SRC)
+	$(CC) $(FLAGS) $(SRC) -o $(NAME)
 
 clean:
 	rm -f $(NAME)
